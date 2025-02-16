@@ -7,10 +7,6 @@ const offensiveWords = [
     "nigger", "nigga", "koshi", "n1gg3r", "n1gger", "n1gga", "n1ger", "niger", "useless farmer"
 ];
 
-const AntiFail = [
-    "python", "java", "javascript", "html", "css", "pycharm"
-];
-
 const responses = {
     "hello": ["Hi!", "Hello There!", "Hey, How's It Going?"],
     "how are you": ["I'm Feeling Good! How About You?", "Feeling Chatty!"],
@@ -27,28 +23,12 @@ const storedResponses = JSON.parse(localStorage.getItem("chatbotResponses")) || 
 
 function sendMessage() {
     let message = userInput.value.trim().toLowerCase();
-    console.log("User input:", message);  // Debugging input
+    console.log("User input:", message);  // Debugging the user input
+
     if (message === "") return;
 
     // Check for offensive language
     if (containsOffensiveLanguage(message)) {
-        addMessage("Please refrain from using inappropriate language.", "bot");
-        userInput.value = "";
-        return;
-    }
-    ...
-}
-
-
-    // Check for offensive language
-    if (containsOffensiveLanguage(message)) {
-        addMessage("Please refrain from using inappropriate language.", "bot");
-        userInput.value = "";
-        return;
-    }
-
-    // Check for AntiFail words
-    if (containsAntiFail(message)) {
         addMessage("Please refrain from using inappropriate language.", "bot");
         userInput.value = "";
         return;
@@ -93,18 +73,10 @@ function getResponse(input) {
 
 // Function to check if the input contains offensive language
 function containsOffensiveLanguage(input) {
+    console.log("Checking for offensive language in:", input);  // Debugging check
     for (let word of offensiveWords) {
-        if (input.includes(word)) {
-            return true;
-        }
-    }
-    return false;
-}
-
-// Function to check if the input contains AntiFail words (optional filter)
-function containsAntiFail(input) {
-    for (let word of AntiFail) {
-        if (input.includes(word)) {
+        if (input.includes(word.toLowerCase())) {
+            console.log("Offensive word found:", word);  // Debugging the offensive word
             return true;
         }
     }
