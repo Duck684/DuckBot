@@ -110,22 +110,37 @@ body {
 
 /* Send Button */
 #send-btn {
-    background: #007bff;
+    background: linear-gradient(145deg, #007bff, #0056b3); /* Gradient effect */
     color: white;
     border: none;
-    padding: 6px 10px;
-    margin-left: 6px;
-    border-radius: 12px;
+    padding: 10px 20px; /* Increased padding for better size */
+    margin-left: 10px; /* Adjusted margin for better alignment */
+    border-radius: 25px; /* Rounded button */
     cursor: pointer;
-    font-size: 13px;
-    box-shadow: 0px 0px 15px rgba(0, 123, 255, 1);
-    transition: 0.3s;
+    font-size: 16px; /* Slightly larger font for better readability */
+    box-shadow: 0px 4px 20px rgba(0, 123, 255, 0.7); /* Subtle shadow for depth */
+    transition: all 0.4s ease-in-out; /* Smoother transitions */
     border: 1px solid rgba(0, 123, 255, 0.8);
+    outline: none; /* Remove outline on focus */
 }
 
+/* Hover Effect */
 #send-btn:hover {
-    background: #0056b3;
-    box-shadow: 0px 0px 20px rgba(0, 123, 255, 1);
+    background: linear-gradient(145deg, #0056b3, #007bff); /* Invert gradient for hover */
+    box-shadow: 0px 6px 25px rgba(0, 123, 255, 0.9); /* Enhance shadow on hover */
+    transform: scale(1.1); /* Slight zoom effect */
+}
+
+/* Active Effect (button pressed) */
+#send-btn:active {
+    background: #003366; /* Darker blue when active */
+    box-shadow: 0px 4px 10px rgba(0, 123, 255, 0.5); /* Shrink shadow on press */
+    transform: scale(1); /* Return to normal size */
+}
+
+/* Focus Effect (for accessibility) */
+#send-btn:focus {
+    box-shadow: 0px 0px 12px rgba(0, 255, 255, 0.7); /* Cyan focus outline */
 }
 
 /* Typing Animation */
