@@ -1,23 +1,26 @@
 const chatBox = document.getElementById("chat-box");
 const userInput = document.getElementById("user-input");
 
-// List of offensive words or phrases (adjust as needed)
+// List of offensive words or phrases
 const offensiveWords = [
     "fuck", "bitch", "stupid", "idiot", "gay",
     "nigger", "nigga", "koshi", "n1gg3r", "n1gger", "n1gga", "n1ger", "niger", "useless farmer",
 ];
 
 const responses = {
-    "hello": ["Hi!", "Hello There!", "Hey, How's It Going?"],
-    "how are you": ["I'm Feeling Good! How About You?", "Feeling Chatty!"],
-    "what can you do": ["I Can Chat With You! I Can Also Help You Learn and Code!"],
-    "bye": ["Goodbye!", "See You Later!", "Take Care!"],
-    "thanks": ["You're Welcome!", "No Problem!", "Anytime!"],
-    "tell me a joke": ["Why Don't Robots Get Tired? Because They Recharge!", 
-                       "Why Did The AI Break Up? It Lost Its Connection!", 
-                       "I Told My Computer A Joke… Now It Won’t Stop Laughing In Binary!"]
+    "hello": ["Hi!", "Hello there!", "Hey, How's it going?"],
+    "how are you": ["I'm feeling good! How about you?", "Feeling chatty!"],
+    "what can you do": ["I can chat with you, tell jokes, and search for information!"],
+    "bye": ["Goodbye!", "See you later!", "Take care!"],
+    "thanks": ["You're welcome!", "No problem!", "Anytime!"],
+    "tell me a joke": ["Why don't robots get tired? Because they recharge!", 
+                       "Why did the AI break up? It lost its connection!", 
+                       "I told my computer a joke... now it won’t stop laughing in binary!"],
+    "chatgpt": "ChatGPT is a conversational AI developed by OpenAI, designed to assist with answering questions, providing information, and generating text in a human-like manner.",
+    "python": "Python is a high-level programming language known for its easy-to-read syntax and versatility. It's widely used in web development, data analysis, machine learning, and more.",
 };
 
+// Load stored responses from localStorage
 const storedResponses = JSON.parse(localStorage.getItem("chatbotResponses")) || {};
 
 function sendMessage() {
@@ -48,34 +51,24 @@ function addMessage(text, sender) {
 }
 
 function getResponse(input) {
+    // Check for a known response in the predefined responses
+    if (responses[input]) {
+        return responses[input][Math.floor(Math.random() * responses[input].length)];
+    }
+
+    // Check for custom responses
     if (storedResponses[input]) {
         return storedResponses[input]; // Use learned responses
     }
 
-    // Handle specific queries
-    if (input.includes("weather")) {
-        return getWeatherInfo(input);
+    // If the input length is large enough and doesn't match any common phrases, search Wikipedia
+    if (input.length > 3) {
+        return getWikipediaData(input);
     }
 
-    if (input.includes("time")) {
-        return getCurrentTime();
-    }
-
-    if (input.includes("calculate")) {
-        return performCalculation(input);
-    }
-
-    for (let key in responses) {
-        if (input.includes(key)) {
-            return responses[key][Math.floor(Math.random() * responses[key].length)];
-        }
-    }
-
-    // If bot doesn't know, check Wikipedia
-    return getWikipediaSummary(input);
+    return "Sorry, I couldn't understand that. Try rephrasing it.";
 }
 
-// Function to check if the input contains offensive language
 function containsOffensiveLanguage(input) {
     for (let word of offensiveWords) {
         if (input.includes(word)) {
@@ -85,56 +78,35 @@ function containsOffensiveLanguage(input) {
     return false;
 }
 
+function getWikipediaData(topic) {
+    addMessage("Searching the internet...", "bot");
+
+    const corsProxy = "https://api.allorigins.win/get?url=";
+    const wikipediaAPIUrl = "https://en.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&exintro&titles=" + encodeURIComponent(topic);
+
+    fetch(corsProxy + encodeURIComponent(wikipediaAPIUrl))
+        .then(response => response.json())
+        .then(data => {
+            const pages = JSON.parse(data.contents).query.pages;
+            const pageId = Object.keys(pages)[0];
+            const extract = pages[pageId].extract;
+
+            if (extract) {
+                // Clean up the HTML tags
+                const cleanText = extract.replace(/<[^>]*>/g, '').trim();
+                addMessage(cleanText, "bot");
+            } else {
+                addMessage("Sorry, I couldn't find any data about that. Try rephrasing it.", "bot");
+            }
+        })
+        .catch(error => {
+            addMessage("Error fetching Wikipedia data: " + error.message, "bot");
+        });
+}
+
+// Capitalize every word in a string
 function capitalizeWords(str) {
     return str.split(" ").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
-}
-
-// Wikipedia Fetching
-function getWikipediaSummary(topic) {
-    const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topic)}`;
-    return fetch(url)
-        .then(response => response.json())
-        .then(data => {
-            if (data.extract) {
-                return data.extract; // Return the Wikipedia summary
-            }
-            return "Sorry, I couldn't find any information on that topic.";
-        })
-        .catch(error => "Error fetching Wikipedia data: " + error.message);
-}
-
-// Weather API Fetching
-function getWeatherInfo(input) {
-    const apiKey = 'your-weather-api-key';  // Replace with actual API key
-    const city = input.replace("weather in", "").trim();
-    const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric`;
-
-    return fetch(url)
-        .then(response => response.json())
-        .then(data => {
-            if (data.main) {
-                return `The temperature in ${city} is ${data.main.temp}°C.`;
-            }
-            return "Sorry, I couldn't fetch the weather data.";
-        })
-        .catch(error => "Error fetching weather data: " + error.message);
-}
-
-// Time Fetching
-function getCurrentTime() {
-    const now = new Date();
-    return `The current time is ${now.toLocaleTimeString()}.`;
-}
-
-// Simple Calculation (Basic Arithmetic)
-function performCalculation(input) {
-    try {
-        let expression = input.replace("calculate", "").trim();
-        let result = eval(expression);  // Evaluates the math expression
-        return `The result is: ${result}`;
-    } catch (error) {
-        return "Sorry, I couldn't process the calculation.";
-    }
 }
 
 userInput.addEventListener("keypress", function(event) {
