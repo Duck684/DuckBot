@@ -4,11 +4,11 @@ const userInput = document.getElementById("user-input");
 // List of offensive words or phrases
 const offensiveWords = [
     "fuck", "bitch", "stupid", "idiot", "gay",
-    "nigger", "nigga", "koshi", "n1gg3r", "n1gger", "n1gga", "n1ger", "niger", "useless farmer", 
+    "nigger", "nigga", "koshi", "n1gg3r", "n1gger", "n1gga", "n1ger", "niger", "useless farmer"
+];
 
 const AntiFail = [
-    "python", "java", "javascript", "html", "css", "pycharm", 
-
+    "python", "java", "javascript", "html", "css", "pycharm"
 ];
 
 const responses = {
@@ -36,6 +36,7 @@ function sendMessage() {
         return;
     }
 
+    // Check for AntiFail words
     if (containsAntiFail(message)) {
         addMessage("Please refrain from using inappropriate language.", "bot");
         userInput.value = "";
@@ -69,14 +70,6 @@ function getResponse(input) {
         }
     }
 
-    // Check for offensive language
-    if (containsOffensiveLanguage(input)) {
-        return "Please refrain from using inappropriate language.";
-
-    if (containsAntiFail(input)) {
-        return "Please refrain from using inappropriate language.";
-    }
-
     // Ask the user for a response and store it
     let newResponse = prompt(`I Don't Understand "${input}". What Should I Reply?`);
     if (newResponse) {
@@ -90,6 +83,16 @@ function getResponse(input) {
 // Function to check if the input contains offensive language
 function containsOffensiveLanguage(input) {
     for (let word of offensiveWords) {
+        if (input.includes(word)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Function to check if the input contains AntiFail words (optional filter)
+function containsAntiFail(input) {
+    for (let word of AntiFail) {
         if (input.includes(word)) {
             return true;
         }
