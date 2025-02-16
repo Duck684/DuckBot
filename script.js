@@ -3,8 +3,8 @@ const userInput = document.getElementById("user-input");
 
 // List of offensive words or phrases
 const offensiveWords = [
-    "swear1", "swear2", "swear3", // Replace with actual words
-    "racistPhrase1", "racistPhrase2" // Replace with actual phrases
+    "fuck", "bitch", "stupid", "idiot", "gay",
+    "nigger", "nigga", "koshi", "n1gg3r", "n1gger", "n1gga", "n1ger", "niger", "useless farmer", 
 ];
 
 const responses = {
