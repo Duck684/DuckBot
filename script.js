@@ -1,117 +1,25 @@
 const chatBox = document.getElementById("chat-box");
 const userInput = document.getElementById("user-input");
 
-// Offensive words list (for filtering inappropriate content)
+// List of offensive words or phrases (adjust as needed)
 const offensiveWords = [
-    "fuck", "bitch", "stupid", "idiot", "gay", "nigger", "nigga"
+    "fuck", "bitch", "stupid", "idiot", "gay",
+    "nigger", "nigga", "koshi", "n1gg3r", "n1gger", "n1gga", "n1ger", "niger", "useless farmer",
 ];
 
 const responses = {
-    "hello": ["Hi!", "Hello!", "How can I help you today?"],
-    "weather": getWeather,
-    "history": worldHistory,
-    "current time": getCurrentTime,
-    "math": performMathOperation,
-    "trivia": triviaGame.start,
-    "news": getLatestNews,
-    "wikipedia": getWikipediaSummary,
-    "learn": learnFromUser
+    "hello": ["Hi!", "Hello There!", "Hey, How's It Going?"],
+    "how are you": ["I'm Feeling Good! How About You?", "Feeling Chatty!"],
+    "what can you do": ["I Can Chat With You! I Can Also Help You Learn and Code!"],
+    "bye": ["Goodbye!", "See You Later!", "Take Care!"],
+    "thanks": ["You're Welcome!", "No Problem!", "Anytime!"],
+    "tell me a joke": ["Why Don't Robots Get Tired? Because They Recharge!", 
+                       "Why Did The AI Break Up? It Lost Its Connection!", 
+                       "I Told My Computer A Joke… Now It Won’t Stop Laughing In Binary!"]
 };
 
-// Example World History facts
-const worldHistory = {
-    "world war 1": "World War 1 was a global war that lasted from 1914 to 1918. It involved most of the world's great powers and led to major political changes.",
-    "world war 2": "World War 2 lasted from 1939 to 1945 and was the deadliest conflict in human history, involving most of the world's nations."
-};
+const storedResponses = JSON.parse(localStorage.getItem("chatbotResponses")) || {};
 
-// Example trivia questions
-const triviaQuestions = [
-    { question: "What is the capital of France?", answer: "Paris" },
-    { question: "Who developed the theory of relativity?", answer: "Albert Einstein" },
-    { question: "What is the largest mammal?", answer: "Blue Whale" }
-];
-
-// Trivia Game Object
-let triviaGame = {
-    currentQuestion: null,
-    start: function() {
-        this.currentQuestion = triviaQuestions[Math.floor(Math.random() * triviaQuestions.length)];
-        return this.currentQuestion.question;
-    },
-    checkAnswer: function(input) {
-        if (this.currentQuestion && input.toLowerCase() === this.currentQuestion.answer.toLowerCase()) {
-            return "Correct! Well done!";
-        } else {
-            return "Oops! That's not right. Try again!";
-        }
-    }
-};
-
-// Function to get current time
-function getCurrentTime() {
-    let date = new Date();
-    return date.toLocaleString(); // Display current time in a readable format
-}
-
-// Function to perform math operation
-function performMathOperation(input) {
-    const math = require('mathjs');
-    try {
-        return math.evaluate(input);
-    } catch (e) {
-        return "Error performing math operation!";
-    }
-}
-
-// Function to get weather using OpenWeatherMap API
-function getWeather(city) {
-    const apiKey = 'your_api_key'; // Get from OpenWeatherMap
-    const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
-    return fetch(url)
-        .then(response => response.json())
-        .then(data => {
-            if (data.cod === 200) {
-                return `The weather in ${data.name} is currently ${data.weather[0].description} with a temperature of ${data.main.temp}°C.`;
-            } else {
-                return "Sorry, I couldn't fetch the weather data.";
-            }
-        })
-        .catch(error => "Error fetching weather data: " + error.message);
-}
-
-// Function to get latest news
-function getLatestNews() {
-    const apiKey = 'your_news_api_key'; // Get from NewsAPI
-    const url = `https://newsapi.org/v2/top-headlines?apiKey=${apiKey}&country=us`;
-    return fetch(url)
-        .then(response => response.json())
-        .then(data => {
-            let articles = data.articles.slice(0, 3);
-            return articles.map(article => `${article.title} - ${article.source.name}`).join("\n");
-        })
-        .catch(error => "Error fetching news: " + error.message);
-}
-
-// Function to get summary from Wikipedia
-function getWikipediaSummary(topic) {
-    const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topic)}`;
-    return fetch(url)
-        .then(response => response.json())
-        .then(data => data.extract || "No summary found.")
-        .catch(error => "Error fetching Wikipedia data: " + error.message);
-}
-
-// Function to check if message contains offensive language
-function containsOffensiveLanguage(input) {
-    for (let word of offensiveWords) {
-        if (input.includes(word)) {
-            return true;
-        }
-    }
-    return false;
-}
-
-// Function to send the message
 function sendMessage() {
     let message = userInput.value.trim().toLowerCase();
     if (message === "") return;
@@ -131,7 +39,6 @@ function sendMessage() {
     userInput.value = "";
 }
 
-// Function to add a message to the chat
 function addMessage(text, sender) {
     let messageDiv = document.createElement("div");
     messageDiv.classList.add("chat-message", sender);
@@ -140,66 +47,96 @@ function addMessage(text, sender) {
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// Function to get response based on user input
 function getResponse(input) {
-    if (responses[input]) {
-        return responses[input];
+    if (storedResponses[input]) {
+        return storedResponses[input]; // Use learned responses
     }
 
-    // Search for history responses
-    for (let key in worldHistory) {
-        if (input.includes(key)) {
-            return worldHistory[key];
-        }
-    }
-
-    // Trivia game check
-    if (input === "trivia") {
-        return triviaGame.start();
-    }
-
-    // Check if user asked for weather
+    // Handle specific queries
     if (input.includes("weather")) {
-        let city = input.split("weather in ")[1];
-        if (city) {
-            return getWeather(city);
-        } else {
-            return "Please specify a city for weather.";
+        return getWeatherInfo(input);
+    }
+
+    if (input.includes("time")) {
+        return getCurrentTime();
+    }
+
+    if (input.includes("calculate")) {
+        return performCalculation(input);
+    }
+
+    for (let key in responses) {
+        if (input.includes(key)) {
+            return responses[key][Math.floor(Math.random() * responses[key].length)];
         }
     }
 
-    // Check for math operations
-    if (input.includes("math")) {
-        let operation = input.split("math ")[1];
-        return performMathOperation(operation);
-    }
-
-    // Check for news updates
-    if (input.includes("news")) {
-        return getLatestNews();
-    }
-
-    // Wikipedia query
-    if (input.includes("wikipedia")) {
-        let topic = input.split("wikipedia ")[1];
-        return getWikipediaSummary(topic);
-    }
-
-    return "I don't know that yet.";
+    // If bot doesn't know, check Wikipedia
+    return getWikipediaSummary(input);
 }
 
-// Function to capitalize every word in a string
+// Function to check if the input contains offensive language
+function containsOffensiveLanguage(input) {
+    for (let word of offensiveWords) {
+        if (input.includes(word)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 function capitalizeWords(str) {
     return str.split(" ").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
 }
 
-// Function to store responses for learning
-function learnFromUser(input, response) {
-    storedResponses[input] = response;
-    localStorage.setItem("chatbotResponses", JSON.stringify(storedResponses));
+// Wikipedia Fetching
+function getWikipediaSummary(topic) {
+    const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topic)}`;
+    return fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            if (data.extract) {
+                return data.extract; // Return the Wikipedia summary
+            }
+            return "Sorry, I couldn't find any information on that topic.";
+        })
+        .catch(error => "Error fetching Wikipedia data: " + error.message);
 }
 
-// Event listener for user input
+// Weather API Fetching
+function getWeatherInfo(input) {
+    const apiKey = 'your-weather-api-key';  // Replace with actual API key
+    const city = input.replace("weather in", "").trim();
+    const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric`;
+
+    return fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            if (data.main) {
+                return `The temperature in ${city} is ${data.main.temp}°C.`;
+            }
+            return "Sorry, I couldn't fetch the weather data.";
+        })
+        .catch(error => "Error fetching weather data: " + error.message);
+}
+
+// Time Fetching
+function getCurrentTime() {
+    const now = new Date();
+    return `The current time is ${now.toLocaleTimeString()}.`;
+}
+
+// Simple Calculation (Basic Arithmetic)
+function performCalculation(input) {
+    try {
+        let expression = input.replace("calculate", "").trim();
+        let result = eval(expression);  // Evaluates the math expression
+        return `The result is: ${result}`;
+    } catch (error) {
+        return "Sorry, I couldn't process the calculation.";
+    }
+}
+
 userInput.addEventListener("keypress", function(event) {
     if (event.key === "Enter") {
         sendMessage();
