@@ -5,6 +5,10 @@ const userInput = document.getElementById("user-input");
 const offensiveWords = [
     "fuck", "bitch", "stupid", "idiot", "gay",
     "nigger", "nigga", "koshi", "n1gg3r", "n1gger", "n1gga", "n1ger", "niger", "useless farmer", 
+
+const AntiFail = [
+    "python", "java", "javascript", "html", "css", "pycharm", 
+
 ];
 
 const responses = {
@@ -61,6 +65,9 @@ function getResponse(input) {
 
     // Check for offensive language
     if (containsOffensiveLanguage(input)) {
+        return "Please refrain from using inappropriate language.";
+
+    if (containsAntiFail(input)) {
         return "Please refrain from using inappropriate language.";
     }
 
