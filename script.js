@@ -1,7 +1,7 @@
 const chatBox = document.getElementById("chat-box");
 const userInput = document.getElementById("user-input");
 
-// List of offensive words or phrases
+// List of offensive words or phrases (ensure these are case-insensitive)
 const offensiveWords = [
     "fuck", "bitch", "stupid", "idiot", "gay",
     "nigger", "nigga", "koshi", "n1gg3r", "n1gger", "n1gga", "n1ger", "niger", "useless farmer"
@@ -74,8 +74,10 @@ function getResponse(input) {
 // Function to check if the input contains offensive language
 function containsOffensiveLanguage(input) {
     console.log("Checking for offensive language in:", input);  // Debugging check
+    input = input.toLowerCase();  // Ensure input is case-insensitive
     for (let word of offensiveWords) {
-        if (input.includes(word.toLowerCase())) {
+        console.log("Checking word:", word);  // Debugging each word
+        if (input.includes(word)) {
             console.log("Offensive word found:", word);  // Debugging the offensive word
             return true;
         }
