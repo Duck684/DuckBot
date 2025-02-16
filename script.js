@@ -36,6 +36,12 @@ function sendMessage() {
         return;
     }
 
+    if (containsAntiFail(message)) {
+        addMessage("Please refrain from using inappropriate language.", "bot");
+        userInput.value = "";
+        return;
+    }
+
     addMessage(capitalizeWords(message), "user");
 
     let response = getResponse(message);
