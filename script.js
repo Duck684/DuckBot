@@ -37,7 +37,9 @@ function sendMessage() {
     addMessage(capitalizeWords(message), "user");
 
     let response = getResponse(message);
-    setTimeout(() => addMessage(capitalizeWords(response), "bot"), 500);
+    if (response) {
+        setTimeout(() => addMessage(capitalizeWords(response), "bot"), 500);
+    }
 
     userInput.value = "";
 }
@@ -61,62 +63,41 @@ function getResponse(input) {
         return storedResponses[input]; // Use learned responses
     }
 
-    // Handle basic math operations
-    if (input.match(/^[0-9+\-*/().\s]*$/)) {
+    // Handle math calculations, even with "What is"
+    let mathExpression = extractMathExpression(input);
+    if (mathExpression) {
         try {
-            return eval(input).toString();
+            return eval(mathExpression).toString();
         } catch (error) {
             return "Sorry, I couldn't process that math. Try rephrasing it.";
         }
     }
 
-    // If the bot doesn't know the answer, ask the user to provide an answer
-    if (!storedResponses[input]) {
-        showModal(input);
-    }
-
-    return ""; // No predefined answer
-}
-
-function showModal(query) {
-    // Display the modal pop-up to ask the user for an answer
-    const modal = document.getElementById("response-modal");
-    const modalContent = document.getElementById("modal-content");
-    const inputField = document.getElementById("modal-input");
-    const submitBtn = document.getElementById("submit-answer");
-
-    modal.style.display = "block";
-    modalContent.textContent = `I don't know the answer to "${query}". Please provide an answer.`;
-
-    submitBtn.onclick = function() {
-        const userAnswer = inputField.value.trim();
-        if (userAnswer) {
-            // Save the user's answer and close the modal
-            storedResponses[query] = userAnswer;
-            localStorage.setItem("chatbotResponses", JSON.stringify(storedResponses)); // Save to localStorage
-            addMessage(`Thanks! Now I know how to respond: "${userAnswer}"`, "bot");
-            modal.style.display = "none";
-        } else {
-            alert("Please provide an answer!");
-        }
-    };
-}
-
-// Close modal when clicking outside of it
-window.onclick = function(event) {
-    const modal = document.getElementById("response-modal");
-    if (event.target === modal) {
-        modal.style.display = "none";
-    }
+    // Ask the user to provide an answer instead of searching the internet
+    askUserForResponse(input);
+    return "";
 }
 
 function containsOffensiveLanguage(input) {
-    for (let word of offensiveWords) {
-        if (input.includes(word)) {
-            return true;
-        }
+    return offensiveWords.some(word => input.includes(word));
+}
+
+// Extracts a math expression from a phrase like "What is 3*2"
+function extractMathExpression(input) {
+    let match = input.match(/(?:what is|calculate|solve|evaluate)?\s*([\d+\-*/().\s]+)/i);
+    return match ? match[1].trim() : null;
+}
+
+function askUserForResponse(input) {
+    let userResponse = prompt(`I don't know how to respond to "${input}". Please provide a response:`);
+
+    if (userResponse) {
+        storedResponses[input] = userResponse;
+        localStorage.setItem("chatbotResponses", JSON.stringify(storedResponses));
+        addMessage(userResponse, "bot");
+    } else {
+        addMessage("Okay, I'll try to learn next time!", "bot");
     }
-    return false;
 }
 
 // Capitalize every word in a string
