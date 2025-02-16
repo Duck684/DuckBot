@@ -71,21 +71,42 @@ function getResponse(input) {
     }
 
     // If the bot doesn't know the answer, ask the user to provide an answer
-    addMessage("I don't know the answer to that. Please tell me what I should say when asked this.", "bot");
-
-    // Create a prompt for the user to provide an answer
-    createUserAnswerPrompt(input);
+    if (!storedResponses[input]) {
+        showModal(input);
+    }
 
     return ""; // No predefined answer
 }
 
-function createUserAnswerPrompt(query) {
-    // Create a prompt for the user to enter a response
-    const prompt = prompt("Please provide an answer for the question: " + query);
-    if (prompt) {
-        storedResponses[query] = prompt; // Store the user's response for future use
-        localStorage.setItem("chatbotResponses", JSON.stringify(storedResponses)); // Save it to localStorage
-        addMessage("Thanks for the answer! Now I know how to respond.", "bot");
+function showModal(query) {
+    // Display the modal pop-up to ask the user for an answer
+    const modal = document.getElementById("response-modal");
+    const modalContent = document.getElementById("modal-content");
+    const inputField = document.getElementById("modal-input");
+    const submitBtn = document.getElementById("submit-answer");
+
+    modal.style.display = "block";
+    modalContent.textContent = `I don't know the answer to "${query}". Please provide an answer.`;
+
+    submitBtn.onclick = function() {
+        const userAnswer = inputField.value.trim();
+        if (userAnswer) {
+            // Save the user's answer and close the modal
+            storedResponses[query] = userAnswer;
+            localStorage.setItem("chatbotResponses", JSON.stringify(storedResponses)); // Save to localStorage
+            addMessage(`Thanks! Now I know how to respond: "${userAnswer}"`, "bot");
+            modal.style.display = "none";
+        } else {
+            alert("Please provide an answer!");
+        }
+    };
+}
+
+// Close modal when clicking outside of it
+window.onclick = function(event) {
+    const modal = document.getElementById("response-modal");
+    if (event.target === modal) {
+        modal.style.display = "none";
     }
 }
 
