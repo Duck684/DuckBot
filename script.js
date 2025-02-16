@@ -61,7 +61,12 @@ function getResponse(input) {
         return storedResponses[input]; // Use learned responses
     }
 
-    // If the input length is large enough and doesn't match any common phrases, search Wikipedia
+    // Check if the input is a math expression
+    if (isMathExpression(input)) {
+        return evaluateMathExpression(input);
+    }
+
+    // Avoid searching Wikipedia for very short or vague inputs
     if (input.length > 3) {
         return getWikipediaData(input);
     }
@@ -76,6 +81,21 @@ function containsOffensiveLanguage(input) {
         }
     }
     return false;
+}
+
+function isMathExpression(input) {
+    // Regex to detect basic math expressions like 3+2, 5*3, etc.
+    return /^[0-9+\-*/().\s]+$/.test(input);
+}
+
+function evaluateMathExpression(expression) {
+    try {
+        // Evaluate the expression using JavaScript's eval function
+        const result = eval(expression);
+        return `The result is: ${result}`;
+    } catch (error) {
+        return "Sorry, I couldn't calculate that. Try rephrasing it.";
+    }
 }
 
 function getWikipediaData(topic) {
