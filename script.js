@@ -23,7 +23,7 @@ const responses = {
 // Load stored responses from localStorage
 const storedResponses = JSON.parse(localStorage.getItem("chatbotResponses")) || {};
 
-function sendMessage() {
+async function sendMessage() {
     let message = userInput.value.trim().toLowerCase();
     if (message === "") return;
 
@@ -36,7 +36,7 @@ function sendMessage() {
 
     addMessage(capitalizeWords(message), "user");
 
-    let response = getResponse(message);
+    let response = await getResponse(message);
     if (response) {
         setTimeout(() => addMessage(capitalizeWords(response), "bot"), 500);
     }
@@ -52,7 +52,7 @@ function addMessage(text, sender) {
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-function getResponse(input) {
+async function getResponse(input) {
     // Check for a known response in the predefined responses
     if (responses[input]) {
         return responses[input][Math.floor(Math.random() * responses[input].length)];
@@ -63,40 +63,53 @@ function getResponse(input) {
         return storedResponses[input]; // Use learned responses
     }
 
-    // Handle math calculations, even with "What is"
-    let mathExpression = extractMathExpression(input);
-    if (mathExpression) {
+    // Handle basic math operations directly
+    if (/^\s*[-+]?\d+(\.\d+)?([\s]*[-+*/][\s]*[-+]?\d+(\.\d+)?)*\s*$/.test(input)) {
         try {
-            return eval(mathExpression).toString();
+            return eval(input).toString();
         } catch (error) {
             return "Sorry, I couldn't process that math. Try rephrasing it.";
         }
     }
 
-    // Ask the user to provide an answer instead of searching the internet
-    askUserForResponse(input);
-    return "";
+    // Only search if the input length is large and doesn't match common responses
+    if (input.length > 3) {
+        addMessage("Searching The Internet...", "bot");
+        const searchResult = await getInternetData(input);
+        if (searchResult) {
+            return searchResult;
+        }
+        return "Sorry, I couldn't find any relevant information.";
+    }
+
+    return "Sorry, I couldn't understand that. Try rephrasing it.";
 }
 
 function containsOffensiveLanguage(input) {
-    return offensiveWords.some(word => input.includes(word));
+    for (let word of offensiveWords) {
+        if (input.includes(word)) {
+            return true;
+        }
+    }
+    return false;
 }
 
-// Extracts a math expression from a phrase like "What is 3*2"
-function extractMathExpression(input) {
-    let match = input.match(/(?:what is|calculate|solve|evaluate)?\s*([\d+\-*/().\s]+)/i);
-    return match ? match[1].trim() : null;
-}
+async function getInternetData(topic) {
+    const wikipediaAPIUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topic)}`;
 
-function askUserForResponse(input) {
-    let userResponse = prompt(`I don't know how to respond to "${input}". Please provide a response:`);
-
-    if (userResponse) {
-        storedResponses[input] = userResponse;
-        localStorage.setItem("chatbotResponses", JSON.stringify(storedResponses));
-        addMessage(userResponse, "bot");
-    } else {
-        addMessage("Okay, I'll try to learn next time!", "bot");
+    try {
+        const response = await fetch(wikipediaAPIUrl);
+        if (!response.ok) {
+            throw new Error("Failed to fetch data");
+        }
+        const data = await response.json();
+        if (data.extract) {
+            return data.extract;
+        } else {
+            return "Sorry, no relevant data found.";
+        }
+    } catch (error) {
+        return "Couldn't Find Any Data, Try Rephrasing It (Example : What Is a Duck? ---> Duck)";
     }
 }
 
