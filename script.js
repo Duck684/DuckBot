@@ -9,7 +9,7 @@ const offensiveWords = [
 
 const responses = {
     "hello": ["Hi!", "Hello there!", "Hey, How's it going?"],
-    "how are you": ["I'm good, how about you?"],
+    "how are you": ["I'm good, How about you?", "Feeling chatty! How about you?"],
     "what can you do": ["I can chat with you, tell jokes, and search for information!"],
     "bye": ["Goodbye!", "See you later!", "Take care!"],
     "thanks": ["You're welcome!", "No problem!", "Anytime!"],
@@ -19,7 +19,6 @@ const responses = {
     "chatgpt": "ChatGPT is a conversational AI developed by OpenAI, designed to assist with answering questions, providing information, and generating text in a human-like manner.",
     "python": "Python is a high-level programming language known for its easy-to-read syntax and versatility. It's widely used in web development, data analysis, machine learning, and more.",
 };
-
 
 // Load stored responses from localStorage
 const storedResponses = JSON.parse(localStorage.getItem("chatbotResponses")) || {};
@@ -62,17 +61,32 @@ function getResponse(input) {
         return storedResponses[input]; // Use learned responses
     }
 
-    // Check if the input is a math expression
-    if (isMathExpression(input)) {
-        return evaluateMathExpression(input);
+    // Handle basic math operations
+    if (input.match(/^[0-9+\-*/().\s]*$/)) {
+        try {
+            return eval(input).toString();
+        } catch (error) {
+            return "Sorry, I couldn't process that math. Try rephrasing it.";
+        }
     }
 
-    // Avoid searching Wikipedia for very short or vague inputs
-    if (input.length > 3) {
-        return getWikipediaData(input);
-    }
+    // If the bot doesn't know the answer, ask the user to provide an answer
+    addMessage("I don't know the answer to that. Please tell me what I should say when asked this.", "bot");
 
-    return "Sorry, I couldn't understand that. Try rephrasing it.";
+    // Create a prompt for the user to provide an answer
+    createUserAnswerPrompt(input);
+
+    return ""; // No predefined answer
+}
+
+function createUserAnswerPrompt(query) {
+    // Create a prompt for the user to enter a response
+    const prompt = prompt("Please provide an answer for the question: " + query);
+    if (prompt) {
+        storedResponses[query] = prompt; // Store the user's response for future use
+        localStorage.setItem("chatbotResponses", JSON.stringify(storedResponses)); // Save it to localStorage
+        addMessage("Thanks for the answer! Now I know how to respond.", "bot");
+    }
 }
 
 function containsOffensiveLanguage(input) {
@@ -82,47 +96,6 @@ function containsOffensiveLanguage(input) {
         }
     }
     return false;
-}
-
-function isMathExpression(input) {
-    // Regex to detect math expressions, including numbers, basic operators (+, -, *, /)
-    return /^[0-9+\-*/().\s]+$/.test(input);
-}
-
-function evaluateMathExpression(expression) {
-    try {
-        // Evaluate the expression using JavaScript's eval function
-        const result = eval(expression);
-        return `The result is: ${result}`;
-    } catch (error) {
-        return "Sorry, I couldn't calculate that. Try rephrasing it.";
-    }
-}
-
-function getWikipediaData(topic) {
-    addMessage("Searching the internet...", "bot");
-
-    const corsProxy = "https://api.allorigins.win/get?url=";
-    const wikipediaAPIUrl = "https://en.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&exintro&titles=" + encodeURIComponent(topic);
-
-    fetch(corsProxy + encodeURIComponent(wikipediaAPIUrl))
-        .then(response => response.json())
-        .then(data => {
-            const pages = JSON.parse(data.contents).query.pages;
-            const pageId = Object.keys(pages)[0];
-            const extract = pages[pageId].extract;
-
-            if (extract) {
-                // Clean up the HTML tags
-                const cleanText = extract.replace(/<[^>]*>/g, '').trim();
-                addMessage(cleanText, "bot");
-            } else {
-                addMessage("Sorry, I couldn't find any data about that. Try rephrasing it.", "bot");
-            }
-        })
-        .catch(error => {
-            addMessage("Error fetching Wikipedia data: " + error.message, "bot");
-        });
 }
 
 // Capitalize every word in a string
