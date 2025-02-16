@@ -27,7 +27,18 @@ const storedResponses = JSON.parse(localStorage.getItem("chatbotResponses")) || 
 
 function sendMessage() {
     let message = userInput.value.trim().toLowerCase();
+    console.log("User input:", message);  // Debugging input
     if (message === "") return;
+
+    // Check for offensive language
+    if (containsOffensiveLanguage(message)) {
+        addMessage("Please refrain from using inappropriate language.", "bot");
+        userInput.value = "";
+        return;
+    }
+    ...
+}
+
 
     // Check for offensive language
     if (containsOffensiveLanguage(message)) {
