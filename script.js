@@ -9,6 +9,7 @@ const offensiveWords = [
 
 const responses = {
     "hello": ["Hi!", "Hello there!", "Hey, How's it going?"],
+    "what can you do?": ["I Can Chat, Answer Questions, Calculate, Search In Wikipedia, Tell You Fun Facts & Tell You a Joke."],
     "how are you": ["I'm good, How about you?", "Feeling chatty! How about you?"],
     "what can you do": ["I can chat with you, tell jokes, and search for information!"],
     "bye": ["Goodbye!", "See you later!", "Take care!"],
