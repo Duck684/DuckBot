@@ -9,7 +9,7 @@ const offensiveWords = [
 
 const responses = {
     "hello": ["Hi!", "Hello there!", "Hey, How's it going?"],
-    "how are you": ["I'm feeling good! How about you?", "Feeling chatty!"],
+    "how are you": ["I'm good, how about you?"],
     "what can you do": ["I can chat with you, tell jokes, and search for information!"],
     "bye": ["Goodbye!", "See you later!", "Take care!"],
     "thanks": ["You're welcome!", "No problem!", "Anytime!"],
@@ -19,6 +19,7 @@ const responses = {
     "chatgpt": "ChatGPT is a conversational AI developed by OpenAI, designed to assist with answering questions, providing information, and generating text in a human-like manner.",
     "python": "Python is a high-level programming language known for its easy-to-read syntax and versatility. It's widely used in web development, data analysis, machine learning, and more.",
 };
+
 
 // Load stored responses from localStorage
 const storedResponses = JSON.parse(localStorage.getItem("chatbotResponses")) || {};
@@ -84,7 +85,7 @@ function containsOffensiveLanguage(input) {
 }
 
 function isMathExpression(input) {
-    // Regex to detect basic math expressions like 3+2, 5*3, etc.
+    // Regex to detect math expressions, including numbers, basic operators (+, -, *, /)
     return /^[0-9+\-*/().\s]+$/.test(input);
 }
 
